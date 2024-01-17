@@ -16,7 +16,7 @@ public class ScrollingPlatformer implements ActionListener {
 	DrawingPanel panel;
 	
 	Timer timer;
-	int timeSpeed = 10;
+	int timeSpeed = 100;
 	
 	Player player;
 	Level level1, level2, level3, level4;
@@ -55,7 +55,7 @@ public class ScrollingPlatformer implements ActionListener {
 		panel.setPreferredSize(new Dimension(1280, 720)); 
 		panel.setBackground(Color.black);
 		
-		astronaut = loadImage("/Testing.png");
+		astronaut = loadImage("/Astronaut.png");
 		//bkImage= loadImage("/Astronaut-Sheet.png");
 
 		level1 = new Level();
