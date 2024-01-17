@@ -27,12 +27,12 @@ public class ScrollingPlatformer implements ActionListener {
 	int levelCounter = 0;
 	ArrayList<Level> levels = new ArrayList<Level>();
 	
-	BufferedImage astronaut;
+	BufferedImage astronaut, bkImage;
 	//The Sprite sheet has 7 rows of sprites, each consisting of 14 frames.
 	//Each sprite is 64x64 pixels.
 	int spriteW = 16;
 	int spriteH = 16;
-	int spriteRows = 1;
+	int spriteRows = 2;
 	int spriteCols = 14;
 	int currentSprite = 0;
 	
@@ -56,6 +56,7 @@ public class ScrollingPlatformer implements ActionListener {
 		panel.setBackground(Color.black);
 		
 		astronaut = loadImage("/Testing.png");
+		//bkImage= loadImage("/Astronaut-Sheet.png");
 
 		level1 = new Level();
 
@@ -90,6 +91,9 @@ public class ScrollingPlatformer implements ActionListener {
 		level1.addHazard(460, 600, 30, 30);
 		level1.addHazard(600, 600, 30, 30);
 		level1.addHazard(1025, 500, 30, 30);
+		
+		// falling out the map hazard
+		level1.addHazard(0, 750, 1280 + level1.scrollStop, 50);
 		
 		level2 = new Level();
 		
@@ -129,7 +133,7 @@ public class ScrollingPlatformer implements ActionListener {
 		levels.add(level3);
 		levels.add(level4);
 
-		player = new Player(50, 650, 50, 50, level2);
+		player = new Player(50, 650, 50, 50, level1);
 		
 		timer = new Timer(timeSpeed, this);
 		
@@ -166,6 +170,26 @@ public class ScrollingPlatformer implements ActionListener {
 			g2.setColor(Color.white);
 			for (Rectangle r: player.currentLevel.getPlatforms()) g2.fillRect(r.x, r.y, r.width, r.height); 
 			
+			
+			// Update the sprite index for walking animation
+			if (player.right) {
+				currentSprite++;
+				if (currentSprite >= 1 * spriteCols) { // if its the last image of the sprite, restart the sprite
+					currentSprite = 0;
+				}
+			}
+			// Update the sprite index for walking animation
+			if (player.left) {
+				currentSprite++;
+				if (currentSprite >= 2 * spriteCols) { // if its the last image of the sprite, restart the sprite
+					currentSprite = 15;
+				}
+			}
+
+			if (!player.left && !player.right) {
+				currentSprite = 0;
+			}
+			
 			// Calculate the position and size of the current sprite
 			int spriteX = (currentSprite % spriteCols) * spriteW; 
 			int spriteY = (currentSprite / spriteCols) * spriteH;
@@ -180,10 +204,11 @@ public class ScrollingPlatformer implements ActionListener {
 					spriteX, spriteY, spriteX + spriteW, spriteY + spriteH, null);
 			g2.drawRect(player.x, player.y, player.width, player.height);
 			
+			//g2.drawImage(bkImage, 0, 0, this);
+			
 			if (player.attacking) {
 				g2.setColor(Color.cyan);	
 				g2.fillRect(player.swordHitbox.x, player.swordHitbox.y, player.swordHitbox.width, player.swordHitbox.height);
-
 			}
 			
 			g2.setColor(Color.red);
