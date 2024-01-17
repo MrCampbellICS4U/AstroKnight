@@ -180,10 +180,10 @@ public class ScrollingPlatformer implements ActionListener {
 			}
 			// Update the sprite index for walking animation
 			if (player.left) {
-				currentSprite++;
-				if (currentSprite >= 2 * spriteCols) { // if its the last image of the sprite, restart the sprite
-					currentSprite = 15;
-				}
+			    currentSprite++;
+			    if (currentSprite >= 2 * spriteCols || currentSprite < spriteCols) {
+			        currentSprite = spriteCols;
+			    }
 			}
 
 			if (!player.left && !player.right) {
