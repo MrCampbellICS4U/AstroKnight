@@ -1,0 +1,16 @@
+package CulminatingProject;
+
+import java.awt.*;
+
+public class Enemy extends Rectangle {
+    
+    int health;
+    
+
+    /**
+     * Constructor
+     */
+    Enemy() {  
+        health = 2;
+    }
+}
