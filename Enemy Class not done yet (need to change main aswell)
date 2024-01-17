@@ -1,0 +1,54 @@
+package CulminatingProject;
+
+import java.util.ArrayList;
+import java.awt.*;
+
+public class Enemy {
+
+    private ArrayList<Rectangle> enemy;
+    private ArrayList<Rectangle> enemyOg;
+
+    int scrollStop;
+    int health;
+    int vx;
+    int enemyX, enemyY;
+    int width, height;
+
+    /**
+     * Constructor
+     */
+    Enemy() {
+        enemy = new ArrayList<Rectangle>();
+        enemyOg = new ArrayList<Rectangle>();
+
+        health = 2;
+        vx = 0;
+        enemyX = 0;
+        enemyY = 0;
+        width = 50;
+        height = 50;
+    }
+
+    Enemy(int hp, int speed, int x, int y, int w, int h) {
+        health = hp;
+        vx = speed;
+        enemyX = x;
+        enemyY = y;
+        width = w;
+        height = h;
+    }
+
+    public void addEnemy(int enemyX, int enemyY, int witdh, int height) {
+        this.enemy.add(new Rectangle(enemyX, enemyY, width, height));
+        this.enemyOg.add(new Rectangle(enemyX, enemyY, width, height));
+    }
+
+    public void setScrollStop() {
+        this.scrollStop = 0;
+        for (Rectangle r : this.enemy) {
+            if (r.x + r.width > this.scrollStop)
+                this.scrollStop = r.x + r.width;
+        }
+    }
+
+}
