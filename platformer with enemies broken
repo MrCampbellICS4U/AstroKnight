@@ -1,0 +1,224 @@
+package culminating;
+
+import java.awt.*;
+import java.awt.event.*;
+
+import javax.swing.*;
+import java.util.ArrayList;
+
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import javax.imageio.ImageIO;
+
+public class ScrollingPlatformer implements ActionListener {
+	
+	//get everythign
+	JFrame frame;
+	DrawingPanel panel;
+	
+	Timer timer;
+	int timeSpeed = 10;
+	
+	BufferedImage background;
+	
+	Player player = new Player(50, 650, 50, 50);
+	Level level2, level3, level4;
+	
+	boolean up, left, right, space;
+	int frameCounter = 0;
+	
+	int levelCounter;
+	ArrayList<Level> levels = new ArrayList<Level>();
+	
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				new ScrollingPlatformer();
+			}
+		});
+	}
+	
+	ScrollingPlatformer() { //make evrything appear
+		frame = new JFrame();
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.addKeyListener(new ArrowKeyListener());
+		frame.setResizable(false);
+		
+		panel = new DrawingPanel();
+		panel.setPreferredSize(new Dimension(1280, 720)); 
+		panel.setBackground(Color.black);
+		
+		level2 = new Level();
+		
+		level2.addPlatform(-4, 704, 196, 20);
+		level2.addPlatform(388, 660, 189, 65);
+		level2.addPlatform(580, 520, 188, 34);
+		level2.addPlatform(399, 380, 161, 32);
+		level2.addPlatform(592, 230, 219, 34);
+		level2.addPlatform(938, 232, 106, 104);
+		level2.addPlatform(1143, -6, 137, 247);
+		level2.addPlatform(1033, 564, 122, 162);
+		level2.addPlatform(1307, 564, 122, 162);
+		level2.addPlatform(1600, 470, 300, 30);
+		level2.addPlatform(2100, 400, 200, 880);
+		level2.addPlatform(2100, 0, 200, 200);
+		
+		
+		
+		level2.addHazard(576, 680, 467, 50);
+		level2.addHazard(1144, 612, 163, 113);
+		
+		level2.setScrollStop();
+		level2.addHazard(0, 750, 1280 + level2.scrollStop, 50);
+		
+		level3 = new Level();
+		
+		level3.addPlatform(0, 700, 150, 30);
+		level3.addPlatform(280, 590, 500, 30);
+		level3.addPlatform(280, 570, 120, 30);
+		level3.addPlatform(490, 570, 110, 30);
+		level3.addPlatform(700, 570, 80, 30);
+		level3.addPlatform(280, 390, 500, 80);
+		level3.addPlatform(710, 0, 70, 410);
+		level3.addPlatform(280, 0, 70, 400);
+		level3.addPlatform(980, 530, 130, 30);
+		level3.addPlatform(1260, 480, 130, 30);
+		level3.addPlatform(1535, 390, 190, 340);
+		level3.addPlatform(1705, 530, 100, 200);
+		level3.addPlatform(1800, 440, 150, 290);
+		level3.addPlatform(1970, 300, 210, 20);
+		level3.addPlatform(1830, 180, 130, 20);
+		level3.addPlatform(1980, 80, 490, 20);
+		level3.addPlatform(2285, 280, 70, 80);
+		level3.addPlatform(2635, 480, 280, 250);
+		level3.addPlatform(3090, 410, 390, 320);
+		level3.addPlatform(3090, 0, 390, 230);
+		level3.addPlatform(3680, 360, 250, 360);
+		level3.addPlatform(3680, -10, 250, 240);
+
+		level3.addHazard(390, 580, 110, 20);
+		level3.addHazard(590, 580, 120, 20);
+		level3.addHazard(1715, 470, 90, 70);
+		level3.addHazard(3180, 390, 80, 40);
+		level3.addHazard(3360, 390, 80, 30);
+		
+		level3.addEnemy(new UFO(980, 400, 50, 50, player));
+		
+		level3.setScrollStop();
+		
+		level3.addHazard(0, 750, 1280 + level3.scrollStop, 50);
+		
+		player.currentLevel = level3;
+		
+		level4 = new Level();
+		level4.addPlatform(-4, 704, 196, 20);
+		level4.addHazard(0, 0, 50, 50);
+		
+		level4.setScrollStop();
+		
+		levels.add(level2);
+		levels.add(level3);
+		levels.add(level4);
+		
+		background = loadImage("/spaceBackground.png");
+		
+		levelCounter = levels.indexOf(player.currentLevel);
+		
+		timer = new Timer(timeSpeed, this);
+		
+		frame.setContentPane(panel);
+		frame.pack();
+		frame.setVisible(true);
+		
+		timer.start();
+		
+	}
+	
+	public void actionPerformed(ActionEvent e) {//every frame
+		
+		player.move();
+		player.gravity();
+		player.jump();
+		player.attack();
+		player.currentLevel.checkEnemies();
+		if (player.checkWin()) {
+			levelCounter++;
+			player.currentLevel = levels.get(levelCounter);
+			player.respawn();
+		}
+		if (player.checkDeath()) player.respawn();
+		panel.repaint();
+	}
+	
+
+	
+	private class DrawingPanel extends JPanel {
+
+		public void paintComponent(Graphics g) { //paint
+			super.paintComponent(g);
+			Graphics2D g2 = (Graphics2D)g;
+			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			
+			g2.drawImage(background, 0, 0, 1280, 720, null);
+			g2.setColor(Color.white);
+			
+			g2.fillOval(player.x, player.y, player.width, player.height);
+			
+			if (player.attacking) {
+				g2.setColor(Color.cyan);	
+				g2.fillRect(player.swordHitbox.x, player.swordHitbox.y, player.swordHitbox.width, player.swordHitbox.height);
+
+			}
+			
+			g2.setColor(Color.red);
+			for (Rectangle r: player.currentLevel.getHazards()) g2.fillRect(r.x, r.y, r.width, r.height);
+			
+			g2.setColor(Color.white);
+			for (Rectangle r: player.currentLevel.getPlatforms()) g2.fillRect(r.x, r.y, r.width, r.height); 
+			
+			g2.setColor(Color.green);
+			for (Enemy e: player.currentLevel.getEnemies()) g2.fillRect(e.x, e.y, e.width, e.height);
+			
+			g2.drawString(String.valueOf(player.y), 50, 50);
+			g2.drawString(String.valueOf(player.globalX), 80, 50);
+			g2.drawString(String.valueOf(player.currentLevel.getEnemies().get(0).x), 120, 50);
+			
+			if (player.checkCollision()) g2.fillRect(100, 100, 100, 100);
+			
+		}
+	}
+	
+	public class ArrowKeyListener extends KeyAdapter {
+		
+		public void keyReleased(KeyEvent e) {
+			if (e.getKeyCode() == KeyEvent.VK_LEFT) player.left = false;
+			if (e.getKeyCode() == KeyEvent.VK_RIGHT) player.right = false;
+			if (e.getKeyCode() == KeyEvent.VK_UP) player.up = false;
+			if (e.getKeyCode() == KeyEvent.VK_SPACE) player.space = false;
+		}
+		
+		public void keyPressed(KeyEvent e) {
+			if (e.getKeyCode() == KeyEvent.VK_LEFT) player.left = true;
+			if (e.getKeyCode() == KeyEvent.VK_RIGHT) player.right = true;
+			if (e.getKeyCode() == KeyEvent.VK_UP) player.up = true;
+			if (e.getKeyCode() == KeyEvent.VK_SPACE) player.space = true;
+		}
+	}
+	
+	BufferedImage loadImage(String filename) {
+		BufferedImage image = null;	
+		java.net.URL imageURL = this.getClass().getResource(filename);
+		if (imageURL != null) {
+			try {
+				image = ImageIO.read(imageURL);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} else { 
+			JOptionPane.showMessageDialog(null, "An image failed to load: " + filename , "ERROR", JOptionPane.ERROR_MESSAGE);
+		}
+		return image;
+	}
+
+}
