@@ -27,7 +27,7 @@ public class ScrollingPlatformer implements ActionListener {
 	int levelCounter = 0;
 	ArrayList<Level> levels = new ArrayList<Level>();
 	
-	BufferedImage astronaut, bkImage;
+	BufferedImage astronaut, swordLeft, swordRight;
 	//The Sprite sheet has 7 rows of sprites, each consisting of 14 frames.
 	//Each sprite is 64x64 pixels.
 	int spriteW = 16;
@@ -56,7 +56,8 @@ public class ScrollingPlatformer implements ActionListener {
 		panel.setBackground(Color.black);
 		
 		astronaut = loadImage("/Astronaut.png");
-		//bkImage= loadImage("/Astronaut-Sheet.png");
+		swordLeft = loadImage("/Sword-Left.png");
+		swordRight = loadImage("/Sword-Right.png");
 
 		level1 = new Level();
 
@@ -211,9 +212,15 @@ public class ScrollingPlatformer implements ActionListener {
 			
 			//g2.drawImage(bkImage, 0, 0, this);
 			
-			if (player.attacking) {
+			if (player.attacking && player.facingRight) {
 				g2.setColor(Color.cyan);	
-				g2.fillRect(player.swordHitbox.x, player.swordHitbox.y, player.swordHitbox.width, player.swordHitbox.height);
+				g2.drawImage(swordRight, player.swordHitbox.x, player.swordHitbox.y, player.swordHitbox.width, player.swordHitbox.height, null);
+				g2.drawRect(player.swordHitbox.x, player.swordHitbox.y, player.swordHitbox.width, player.swordHitbox.height);
+			}
+			if (player.attacking && !player.facingRight) {
+				g2.setColor(Color.cyan);	
+				g2.drawImage(swordLeft, player.swordHitbox.x, player.swordHitbox.y, player.swordHitbox.width, player.swordHitbox.height, null);
+				g2.drawRect(player.swordHitbox.x, player.swordHitbox.y, player.swordHitbox.width, player.swordHitbox.height);
 			}
 			
 			g2.setColor(Color.red);
