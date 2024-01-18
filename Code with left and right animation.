@@ -173,6 +173,7 @@ public class ScrollingPlatformer implements ActionListener {
 			
 			// Update the sprite index for walking animation
 			if (player.right) {
+				player.facingRight = true;
 				currentSprite++;
 				if (currentSprite >= 1 * spriteCols) { // if its the last image of the sprite, restart the sprite
 					currentSprite = 0;
@@ -180,14 +181,18 @@ public class ScrollingPlatformer implements ActionListener {
 			}
 			// Update the sprite index for walking animation
 			if (player.left) {
+				player.facingRight = false;
 			    currentSprite++;
 			    if (currentSprite >= 2 * spriteCols || currentSprite < spriteCols) {
 			        currentSprite = spriteCols;
 			    }
 			}
 
-			if (!player.left && !player.right) {
-				currentSprite = 0;
+			if (!player.left && !player.right) { 
+				
+				if (!player.facingRight) currentSprite = 15;
+				if (player.facingRight) currentSprite = 0;
+
 			}
 			
 			// Calculate the position and size of the current sprite
