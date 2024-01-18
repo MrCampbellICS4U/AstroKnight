@@ -1,0 +1,25 @@
+package CulminatingProject;
+
+public class UFO extends Enemy {
+	
+	int upSpeed = 3, downSpeed = 1;
+	
+	boolean moving;
+	
+	UFO(int x, int y, int w, int h, Player p) {
+		super(x, y, w, h, p);
+		
+		this.health = this.ogHealth = 2;
+	}
+	
+	void move() {
+		checkAttack();
+	}
+
+    private void checkAttack() {
+        if (player.x > this.x - 100) {
+            this.y += downSpeed;
+            System.out.println(this.y);
+        }
+    }
+}
