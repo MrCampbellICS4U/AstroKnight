@@ -28,15 +28,23 @@ public class ScrollingPlatformer implements ActionListener {
 	int levelCounter = 0;
 	ArrayList<Level> levels = new ArrayList<Level>();
 
-	BufferedImage astronaut, swordLeft, swordRight, bkImage;
+	BufferedImage astronaut, swordLeft, swordRight, bkImage, jump;
 
 	//The Sprite sheet has 2 rows of sprites, each consisting of 14 frames.
 	//Each sprite is 16x16 pixels.
-	int spriteW = 16;
-	int spriteH = 16;
-	int spriteRows = 2;
-	int spriteCols = 14;
+	int astroSpriteW = 16;
+	int astroSpriteH = 16;
+	int astroSpriteRows = 2;
+	int astroSpriteCols = 14;
 	int currentAstroSprite = 0;
+
+	//The Sprite sheet has 2 rows of sprites, each consisting of 14 frames.
+	//Each sprite is 16x16 pixels.
+	int jumpSpriteW = 16;
+	int jumpSpriteH = 16;
+	int jumpSpriteRows = 1;
+	int jumpSpriteCols = 6;
+	int currentJumpSprite = 0;
 
 	//The Sprite sheet has 1 rows of sprites, each consisting of 17 frames.
 	//Each sprite is 64x64 pixels.
@@ -66,6 +74,7 @@ public class ScrollingPlatformer implements ActionListener {
 		panel.setBackground(Color.black);
 
 		astronaut = loadImage("/Astronaut.png");
+		jump = loadImage("/Jump.png");
 		swordLeft = loadImage("/SwingLeft.png");
 		swordRight = loadImage("/SwingRight.png");
 
@@ -184,92 +193,127 @@ public class ScrollingPlatformer implements ActionListener {
 
 			g2.setColor(Color.white);
 			for (Rectangle r: player.currentLevel.getPlatforms()) g2.fillRect(r.x, r.y, r.width, r.height); 
-			
+
 			// Add a new variable to control the walking animation delay
 			int walkingAnimationDelay = 5;  // Adjust this value to control the animation speed
 
 			if (player.right) {
-			    frameCounter++;
+				frameCounter++;
 
-			    player.facingRight = true;
+				player.facingRight = true;
 
-			    // Update the sprite index for walking animation only if the frameCounter exceeds the delay
-			    if (frameCounter >= walkingAnimationDelay) {
-			        currentAstroSprite++;
-			        frameCounter = 0;
-			    }
+				// Update the sprite index for walking animation only if the frameCounter exceeds the delay
+				if (frameCounter >= walkingAnimationDelay) {
+					currentAstroSprite++;
+					frameCounter = 0;
+				}
 
-			    if (currentAstroSprite >= 1 * spriteCols) {
-			        currentAstroSprite = 0;
-			    }
+				if (currentAstroSprite >= 1 * astroSpriteCols) {
+					currentAstroSprite = 0;
+				}
 			}
-			
+
 			// Update the sprite index for walking animation
 			if (player.left) {
 				frameCounter++;
 				player.facingRight = false;
-				
-			    // Update the sprite index for walking animation only if the frameCounter exceeds the delay
-			    if (frameCounter >= walkingAnimationDelay) {
-			        currentAstroSprite++;
-			        frameCounter = 0;
-			    }
-			    
-				if (currentAstroSprite >= 2 * spriteCols || currentAstroSprite < spriteCols) {
-					currentAstroSprite = spriteCols;
+
+				// Update the sprite index for walking animation only if the frameCounter exceeds the delay
+				if (frameCounter >= walkingAnimationDelay) {
+					currentAstroSprite++;
+					frameCounter = 0;
+				}
+
+				if (currentAstroSprite >= 2 * astroSpriteCols || currentAstroSprite < astroSpriteCols) {
+					currentAstroSprite = astroSpriteCols;
 				}
 			} 
 
+			// Update the sprite index for walking animation
+		    if (player.up && !player.jumping) {
+		        player.jumping = true;
+		        currentJumpSprite = 0;
+		    }
+
+		    // Update the jump animation only if the player is currently jumping
+		    if (player.jumping) {
+		        frameCounter++;
+
+		        // Update the sprite index for jumping animation only if the frameCounter exceeds the delay
+		        int jumpingAnimationDelay = 5;  // Adjust this value to control the animation speed
+
+		        if (frameCounter >= jumpingAnimationDelay) {
+		            currentJumpSprite++;
+		            frameCounter = 0;
+		        }
+
+		        // If the jump animation completes, stop jumping
+		        if (currentJumpSprite >= 1 * jumpSpriteCols) {
+		            currentJumpSprite = 0;
+		            player.jumping = false;
+		        }
+		    }
+
+			// idle left or right
 			if (!player.left && !player.right) { 
 
-				if (!player.facingRight) currentAstroSprite = 15;
+				if (!player.facingRight) currentAstroSprite = 14;
 				if (player.facingRight) currentAstroSprite = 0;
 
 			}
 
 			// Calculate the position and size of the current sprite
-			int AstrospriteX = (currentAstroSprite % spriteCols) * spriteW; 
-			int AstrospriteY = (currentAstroSprite / spriteCols) * spriteH;
+			int AstrospriteX = (currentAstroSprite % astroSpriteCols) * astroSpriteW; 
+			int AstrospriteY = (currentAstroSprite / astroSpriteCols) * astroSpriteH;
+			// Calculate the position and size of the current sprite
+			int jumpSpriteX = (currentJumpSprite % jumpSpriteCols) * jumpSpriteW; 
+			int jumpSpriteY = (currentJumpSprite / jumpSpriteCols) * jumpSpriteH;
 
 			/*
 			 * player.x + player.width, player.y + player.height: bottom-right corner of player's coordinate and top-left corner to specify the size of destiantion rectangle (rectangle size)
 			 * spriteX, spriteY: The top-left coordinates of the first image of the sprite sheet. Coordinates determine which part of the sprite sheet will be drawn. (which frame)
 			 * spriteX + spriteW, spriteY + spriteH: The bottom-right coordinates of the source rectangle within the sprite sheet. With the top-left coordinates, this specifies the size of the source rectangle. (image size)
 			 */
-			// Draw the current sprite
-			g2.drawImage(astronaut, player.x, player.y, player.x + player.width, player.y + player.height,
-					AstrospriteX, AstrospriteY, AstrospriteX + spriteW, AstrospriteY + spriteH, null);
 
-			
+			if (!player.jumping) {
+				g2.drawImage(astronaut, player.x, player.y, player.x + player.width, player.y + player.height,
+						AstrospriteX, AstrospriteY, AstrospriteX + astroSpriteW, AstrospriteY + astroSpriteH, null);
+			}
+			if (player.jumping) {
+				g2.drawImage(jump, player.x, player.y, player.x + player.width, player.y + player.height,
+						jumpSpriteX, jumpSpriteY, jumpSpriteX + jumpSpriteW, jumpSpriteY + jumpSpriteH, null);
+			}
+
+
 			// Add a new variable to control the swinging animation delay
 			int swingingAnimationDelay = 0; 
 
 			if (player.attacking) {
-			    frameCounter++;
+				frameCounter++;
 
-			    if (frameCounter >= swingingAnimationDelay) {
-			        currentSwingSprite++;
-			        frameCounter = 0;
-			    }
+				if (frameCounter >= swingingAnimationDelay) {
+					currentSwingSprite++;
+					frameCounter = 0;
+				}
 
-			    if (currentSwingSprite >= swingSpriteRows * swingSpriteCols) {
-			        currentSwingSprite = 0;
-			    }
+				if (currentSwingSprite >= swingSpriteRows * swingSpriteCols) {
+					currentSwingSprite = 0;
+				}
 
-			    int swordSpriteX = (currentSwingSprite % swingSpriteCols) * swingSpriteW;
-			    int swordSpriteY = (currentSwingSprite / swingSpriteCols) * swingSpriteH;
+				int swordSpriteX = (currentSwingSprite % swingSpriteCols) * swingSpriteW;
+				int swordSpriteY = (currentSwingSprite / swingSpriteCols) * swingSpriteH;
 
-			    if (player.facingRight) {
-			        g2.drawImage(swordRight, player.swordHitbox.x, player.swordHitbox.y,
-			                player.swordHitbox.x + player.swordHitbox.width,
-			                player.swordHitbox.y + player.swordHitbox.height,
-			                swordSpriteX, swordSpriteY, swordSpriteX + swingSpriteW, swordSpriteY + swingSpriteH, null);
-			    } else if (!player.facingRight) {
-			        g2.drawImage(swordLeft, player.swordHitbox.x, player.swordHitbox.y,
-			                player.swordHitbox.x + player.swordHitbox.width,
-			                player.swordHitbox.y + player.swordHitbox.height,
-			                swordSpriteX, swordSpriteY, swordSpriteX + swingSpriteW, swordSpriteY + swingSpriteH, null);
-			    }
+				if (player.facingRight) {
+					g2.drawImage(swordRight, player.swordHitbox.x, player.swordHitbox.y,
+							player.swordHitbox.x + player.swordHitbox.width,
+							player.swordHitbox.y + player.swordHitbox.height,
+							swordSpriteX, swordSpriteY, swordSpriteX + swingSpriteW, swordSpriteY + swingSpriteH, null);
+				} else if (!player.facingRight) {
+					g2.drawImage(swordLeft, player.swordHitbox.x, player.swordHitbox.y,
+							player.swordHitbox.x + player.swordHitbox.width,
+							player.swordHitbox.y + player.swordHitbox.height,
+							swordSpriteX, swordSpriteY, swordSpriteX + swingSpriteW, swordSpriteY + swingSpriteH, null);
+				}
 			} else {
 				currentSwingSprite = 0;
 			}
