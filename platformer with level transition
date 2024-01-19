@@ -1,0 +1,341 @@
+package culminating;
+
+import java.awt.*;
+import java.awt.event.*;
+
+import javax.swing.*;
+import java.util.ArrayList;
+
+public class ScrollingPlatformer implements ActionListener {
+	
+	//get everythign
+	JFrame frame;
+	DrawingPanel panel;
+	
+	Timer timer;
+	int timeSpeed = 10;
+	
+	Player player;
+	Level level2, level3, level4;
+	
+	boolean up, left, right, space;
+	int frameCounter = 0;
+	
+	int levelCounter = 0;
+	ArrayList<Level> levels = new ArrayList<Level>();
+	
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				new ScrollingPlatformer();
+			}
+		});
+	}
+	
+	ScrollingPlatformer() { //make evrything appear
+		frame = new JFrame();
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.addKeyListener(new ArrowKeyListener());
+		frame.setResizable(false);
+		
+		panel = new DrawingPanel();
+		panel.setPreferredSize(new Dimension(1280, 720)); 
+		panel.setBackground(Color.black);
+		
+		level2 = new Level();
+		
+		level2.addPlatform(-4, 704, 196, 20);
+		level2.addPlatform(388, 660, 189, 65);
+		level2.addPlatform(580, 520, 188, 34);
+		level2.addPlatform(399, 380, 161, 32);
+		level2.addPlatform(592, 230, 219, 34);
+		level2.addPlatform(938, 232, 106, 104);
+		level2.addPlatform(1143, -6, 137, 247);
+		level2.addPlatform(1033, 564, 122, 162);
+		level2.addPlatform(1307, 564, 122, 162);
+		level2.addPlatform(1600, 470, 300, 30);
+		level2.addPlatform(2100, 400, 200, 880);
+		level2.addPlatform(2100, 0, 200, 200);
+		
+		level2.setScrollStop();
+		
+		level2.addHazard(576, 680, 467, 50);
+		level2.addHazard(1144, 612, 163, 113);
+		level2.addHazard(0, 750, 1280 + level2.scrollStop, 50);
+		
+		level3 = new Level();
+		level3.addPlatform(-4, 704, 500, 20);
+		level3.addHazard(0, 0, 50, 50);
+		
+		level3.setScrollStop();
+		
+		level4 = new Level();
+		level4.addPlatform(-4, 704, 196, 20);
+		level4.addHazard(0, 0, 50, 50);
+		
+		level4.setScrollStop();
+		
+		levels.add(level2);
+		levels.add(level3);
+		levels.add(level4);
+
+		player = new Player(50, 650, 50, 50, level2);
+		
+		timer = new Timer(timeSpeed, this);
+		
+		frame.setContentPane(panel);
+		frame.pack();
+		frame.setVisible(true);
+		
+		timer.start();
+		
+	}
+	
+	public void actionPerformed(ActionEvent e) {//every frame
+		
+		player.move();
+		player.gravity();
+		player.jump();
+		player.attack();
+		if (player.checkWin()) {
+			levelCounter++;
+			player.currentLevel = levels.get(levelCounter);
+			player.respawn();
+		}
+		if (player.checkDeath()) player.respawn();
+		panel.repaint();
+	}
+	
+private class Player extends Rectangle {
+		
+		double yy;
+		double vy;
+		double g = 0.2; //change for different gravity
+		int reverseStep = 1;
+		
+		int moveSpeed = 3;
+		
+		int globalX;
+		boolean scrolling = false;
+		
+		boolean canJump = true;
+		boolean facingRight = true;
+		
+		boolean attacking = false;
+		
+		int cooldownTimer = 0;
+		int attackTimer = 0;
+		
+		Rectangle swordHitbox;
+		
+		Level currentLevel;
+		
+		Player(int x, int y, int width, int height, Level c) {
+			super(x, y, width, height);
+			globalX = this.x;
+			vy = 0.0;
+			yy = (int)y;
+			
+			swordHitbox = new Rectangle(this.x, this.y, 70, 50);
+			
+			currentLevel = c;
+		}
+		
+		void move() { //move the level if scrolling but move the player if not scrolling
+			if (left) {
+				facingRight = false;
+				globalX -= moveSpeed;
+				if (scrolling) {
+					for (Rectangle r: currentLevel.getPlatforms()) r.x += moveSpeed;
+					for (Rectangle r: currentLevel.getHazards()) r.x += moveSpeed;
+				}
+				else this.x -= moveSpeed;
+				
+				if (checkCollision()) {
+					globalX += moveSpeed;
+					if (scrolling) {
+						for (Rectangle r: currentLevel.getPlatforms()) r.x -= moveSpeed;
+						for (Rectangle r: currentLevel.getHazards()) r.x -= moveSpeed;
+					}
+					else this.x += moveSpeed;
+				}
+			}
+			if (right) {
+				facingRight = true;
+				globalX += moveSpeed;
+				if (scrolling) {
+					for (Rectangle r: currentLevel.getPlatforms()) r.x -= moveSpeed;
+					for (Rectangle r: currentLevel.getHazards()) r.x -= moveSpeed;
+				}
+				else this.x += moveSpeed;
+				
+				if (checkCollision()) {
+					globalX -= moveSpeed;
+					if (scrolling) {
+						for (Rectangle r: currentLevel.getPlatforms()) r.x += moveSpeed;
+						for (Rectangle r: currentLevel.getHazards()) r.x += moveSpeed;
+					}
+					else this.x -= moveSpeed;
+				}
+			}
+			
+			swordHitbox.y = (int)this.yy;
+			if (facingRight) swordHitbox.x = this.x + this.width;
+			else swordHitbox.x = this.x - swordHitbox.width;
+			
+			if (globalX > 640 && globalX + 640 < currentLevel.scrollStop) scrolling = true;
+			else scrolling = false;
+			
+		}
+		
+		boolean checkCollision() { //check collision 
+			for (Rectangle r: currentLevel.getPlatforms()) {
+				if (this.intersects(r)) return true;
+			}
+			return false;
+		}
+		
+		void gravity() {
+			
+			this.y++;
+			
+			if (checkCollision()) {
+				if (vy < 0.0) reverseStep = 1;
+				else reverseStep = -1;
+				
+				
+				while (checkCollision()) { //move out of the block
+					this.y += reverseStep;
+					
+					//this.y--;
+					yy = (double)this.y;
+				}
+				
+				yy = (double)this.y;
+				vy = 0.0;
+				canJump = true;
+			}
+			
+			else { //move player down by gravity
+				vy += g;
+				canJump = false;
+			}
+			this.y--;
+			yy += (vy);
+			this.y = (int)yy;
+			
+		}
+		
+		void jump() {
+			this.y++;	
+			if (up && checkCollision() && canJump) {
+				this.y--;
+				vy = -8; //change to change jump height
+				
+			}
+			this.y--;
+			
+		}
+		
+		void attack() {
+			if (attacking) {
+				if (attackTimer < 5) attackTimer++;
+				else {
+					attacking = false;
+					attackTimer = 0;
+					cooldownTimer = 0;
+				}
+			}
+			else {
+				if (cooldownTimer < 20 && !space) cooldownTimer++;
+				if (space && cooldownTimer >= 20) {
+					attacking = true;
+				}
+			}
+		}
+		
+		boolean checkDeath() {
+			for (Rectangle r: currentLevel.getHazards()) {
+				if (this.intersects(r)) return true;
+			}
+			return false;
+			
+		}
+		
+		boolean checkWin() {
+			if (globalX > currentLevel.scrollStop) return true;
+			else return false;
+		}
+		
+		void respawn() {
+			int index = 0;
+			for (Rectangle r: currentLevel.getPlatforms()) {
+				r.x = currentLevel.getOgPlatforms().get(index).x;
+				r.y = currentLevel.getOgPlatforms().get(index).y;
+				index++;
+			}
+			index = 0;
+			for (Rectangle r: currentLevel.getHazards()) {
+				r.x = currentLevel.getOgHazards().get(index).x;
+				r.y = currentLevel.getOgHazards().get(index).y;
+				index++;
+			}
+			
+			this.x = 50;
+			this.globalX = 50;
+			this.yy = 650.0;
+			this.y = 650;
+			this.vy = 0.0;
+		}
+		
+	}
+	
+	private class DrawingPanel extends JPanel {
+
+		public void paintComponent(Graphics g) { //paint
+			super.paintComponent(g);
+			Graphics2D g2 = (Graphics2D)g;
+			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			
+			g2.setColor(Color.white);
+			for (Rectangle r: player.currentLevel.getPlatforms()) g2.fillRect(r.x, r.y, r.width, r.height); 
+			
+			g2.fillOval(player.x, player.y, player.width, player.height);
+			
+			if (player.attacking) {
+				g2.setColor(Color.cyan);	
+				g2.fillRect(player.swordHitbox.x, player.swordHitbox.y, player.swordHitbox.width, player.swordHitbox.height);
+
+			}
+			
+			g2.setColor(Color.red);
+			for (Rectangle r: player.currentLevel.getHazards()) g2.fillRect(r.x, r.y, r.width, r.height);
+			
+			g2.drawString(String.valueOf(player.y), 50, 50);
+			g2.drawString(String.valueOf(player.globalX), 80, 50);
+			g2.drawString(String.valueOf(player.cooldownTimer), 120, 50);
+			
+			if (player.checkCollision()) g2.fillRect(100, 100, 100, 100);
+			
+		}
+	}
+	
+	public class ArrowKeyListener extends KeyAdapter {
+		
+		public void keyReleased(KeyEvent e) {
+			if (e.getKeyCode() == KeyEvent.VK_LEFT) left = false;
+			if (e.getKeyCode() == KeyEvent.VK_RIGHT) right = false;
+			if (e.getKeyCode() == KeyEvent.VK_UP) up = false;
+			if (e.getKeyCode() == KeyEvent.VK_SPACE) space = false;
+		}
+		
+		public void keyPressed(KeyEvent e) {
+			if (e.getKeyCode() == KeyEvent.VK_LEFT) left = true;
+			if (e.getKeyCode() == KeyEvent.VK_RIGHT) right = true;
+			if (e.getKeyCode() == KeyEvent.VK_UP) up = true;
+			if (e.getKeyCode() == KeyEvent.VK_SPACE) space = true;
+		}
+	}
+
+}

@@ -1,0 +1,43 @@
+package CulminatingProject;
+
+public class Alien extends Enemy {
+
+    int health;
+    int globalX;
+    int vx;
+    int enemyX;
+    int enemyY;
+    int lBound, rBound;
+
+    Boolean turnLeft = false;
+    Boolean turnRight = false;
+
+    Alien(int enemyX, int enemyY, int width, int height, int leftBound, int rightBound, Player p) {
+        super(enemyX, enemyY, width, height, p);
+
+        this.lBound = leftBound;
+        this.rBound = rightBound;
+        this.health = this.ogHealth = 2;
+    }
+
+    @Override
+    public void move() {
+        turning();
+        if (turnLeft) {
+            this.vx *= -1;
+        } else if (turnRight) {
+            this.vx *= -1;
+        }
+    }
+
+    private void turning() {
+        if (this.x < lBound) {
+            turnRight = true;
+            turnLeft = false;
+        }
+        if (this.x > rBound) {
+            turnLeft = true;
+            turnRight = false;
+        }
+    }
+}

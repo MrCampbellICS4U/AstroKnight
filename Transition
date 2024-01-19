@@ -1,0 +1,298 @@
+package CulminatingProject;
+
+import java.awt.*;
+import java.awt.event.*;
+import java.util.ArrayList;
+
+import javax.swing.*;
+
+public class Game implements ActionListener {
+
+	// get everythign
+	int panH = 720;
+	int panW = 1280;
+	JFrame frame;
+	DrawingPanel panel;
+
+	Timer timer;
+	int timeSpeed = 10;
+
+	Player player;
+	int moveSpeed = 10;
+
+	boolean up, left, right;
+
+	int currentLevel;
+
+	ArrayList<ArrayList<Rectangle>> levels;
+
+	public static void main(String[] args) {
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				new Game();
+			}
+		});
+	}
+
+	Game() { // make evrything appear
+		currentLevel = 0;
+		levels = new ArrayList<>();
+		frame = new JFrame();
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.addKeyListener(new ArrowKeyListener());
+		frame.setResizable(false);
+
+		panel = new DrawingPanel();
+		panel.setPreferredSize(new Dimension(panW, panH)); // make the screen bigger after
+		panel.setBackground(Color.black);
+
+		// make level
+		ArrayList<Rectangle> level1 = new ArrayList<>();
+		level1.add(new Rectangle(300, 0, 200, 300));
+		level1.add(new Rectangle(0, 600, 1500, 50));
+		levels.add(level1);
+
+		ArrayList<Rectangle> level2 = new ArrayList<>();
+		level2.add(new Rectangle(0, 100, 200, 100));
+		level2.add(new Rectangle(300, 0, 200, 300));
+		level2.add(new Rectangle(0, 600, 500, 50));
+		level2.add(new Rectangle(600, 600, 900, 50));
+		levels.add(level2);
+
+		ArrayList<Rectangle> level3 = new ArrayList<>();
+		level3.add(new Rectangle(0, 665, 322, 43));
+		level3.add(new Rectangle(338, 590, 43, 119));
+		level3.add(new Rectangle(462, 539, 52, 170));
+		level3.add(new Rectangle(616, 509, 38, 201));
+		level3.add(new Rectangle(740, 462, 42, 249));
+		level3.add(new Rectangle(530, 340, 165, 30));
+		level3.add(new Rectangle(38, 279, 455, 47));
+		level3.add(new Rectangle(27, 186, 91, 26));
+		level3.add(new Rectangle(163, 83, 946, 32));
+		level3.add(new Rectangle(1127, 109, 41, 569));
+		level3.add(new Rectangle(1192, 634, 82, 40));
+		level3.add(new Rectangle(1254, 72, 15, 469));
+		levels.add(level3);
+
+		player = new Player(50, 500, 50, 50);
+
+		timer = new Timer(timeSpeed, this);
+
+		frame.setContentPane(panel);
+		frame.pack();
+		frame.setVisible(true);
+
+		timer.start();
+
+	}
+
+	public void actionPerformed(ActionEvent e) { // every frame
+		player.move(currentLevel);
+		player.gravity();
+		player.jump();
+		player.checkLevel();
+		player.checkDeath();
+		panel.repaint();
+	}
+
+	private class Player extends Rectangle {
+		double yy;
+		double vy;
+		double g = 0.2; // change for different gravity
+		int reverseStep = 1;
+
+		int globalX;
+		boolean scrolling = false;
+
+		boolean canJump = true;
+
+		Player(int x, int y, int width, int height) {
+			super(x, y, width, height);
+			globalX = this.x;
+			vy = 0.0;
+			yy = (int) y;
+		}
+
+		void move(int levelNumber) { // move the level if scrolling but move the player if not scrolling
+			if (left) {
+				globalX -= moveSpeed;
+				if (scrolling)
+					for (Rectangle r : levels.get(levelNumber))
+						r.x += moveSpeed;
+				else
+					this.x -= moveSpeed;
+
+				if (checkCollision(currentLevel)) {
+					globalX += moveSpeed;
+					if (scrolling)
+						for (Rectangle r : levels.get(levelNumber))
+							r.x -= moveSpeed;
+					else
+						this.x += moveSpeed;
+				}
+			}
+			if (right) {
+				globalX += moveSpeed;
+				if (scrolling)
+					for (Rectangle r : levels.get(levelNumber))
+						r.x -= moveSpeed;
+				else
+					this.x += moveSpeed;
+
+				if (checkCollision(currentLevel)) {
+					globalX -= moveSpeed;
+					if (scrolling)
+						for (Rectangle r : levels.get(levelNumber))
+							r.x += moveSpeed;
+					else
+						this.x -= moveSpeed;
+				}
+			}
+
+			if (globalX > (panW / 2 - 25))
+				scrolling = true;
+			else
+				scrolling = false;
+		}
+
+		boolean checkCollision(int levelNumber) { // check collision
+			for (Rectangle r : levels.get(levelNumber)) {
+				if (this.intersects(r))
+					return true;
+			}
+			return false;
+		}
+
+		void gravity() {
+
+			this.y++;
+
+			if (checkCollision(currentLevel)) {
+				if (vy < 0.0)
+					reverseStep = 1;
+				else
+					reverseStep = -1;
+
+				while (checkCollision(currentLevel)) { // move out of the block
+					this.y += reverseStep;
+
+					// this.y--;
+					yy = (double) this.y;
+				}
+
+				yy = (double) this.y;
+				vy = 0.0;
+				canJump = true;
+			}
+
+			else { // move player down by gravity
+				vy += g;
+				canJump = false;
+			}
+			this.y--;
+			yy += (vy);
+			this.y = (int) yy;
+		}
+
+		void jump() {
+			this.y++;
+			if (up && checkCollision(currentLevel) && canJump) {
+				this.y--;
+				vy = -8; // change to change jump height
+
+			}
+			this.y--;
+
+			// if (up) {
+			// this.y++;
+			// if (checkCollision()) {
+			// vy = -4;
+			// }
+			// this.y--;
+			//
+			// }
+		}
+
+		/**
+		 * This method checks if the player reaches the end of a level and simulates the
+		 * transition between the levels
+		 */
+		void checkLevel() {
+			// Check if the player reaches the end of the current room
+			if (globalX >= panW && currentLevel < levels.size() - 1) {
+
+				// Spawns the character at the beginning of the new level
+				globalX = 20;
+				player.x = 20;
+				player.y = 500;
+
+				// Scroll the levels to the left to simulate the transition
+				for (Rectangle r : levels.get(currentLevel)) {
+					r.x -= panW / 2;
+				}
+
+				// Increment the current level
+				currentLevel++;
+			}
+		}
+
+		void checkDeath() {
+			if (player.y > 800) {
+				player.x = 20;
+				player.y = 500;
+				y = 0;
+			}
+		}
+
+	}
+
+	private class DrawingPanel extends JPanel {
+
+		public void paintComponent(Graphics g) { // paint
+			super.paintComponent(g);
+			Graphics2D g2 = (Graphics2D) g;
+			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+			// Draw the current room
+			drawRoom(g, currentLevel);
+
+			// g2.setColor(Color.white);
+			// for (Rectangle r : level3.getPlatforms())
+			// g2.fillRect(r.x, r.y, r.width, r.height);
+
+			g2.fillOval(player.x, player.y, player.width, player.height);
+
+			g2.drawString(String.valueOf(player.globalX), 50, 50);
+		}
+	}
+
+	private void drawRoom(Graphics g2, int levelNumber) {
+		// Draw rectangles for the current room
+		for (Rectangle r : levels.get(levelNumber)) {
+			g2.setColor(Color.white);
+			g2.fillRect(r.x, r.y, r.width, r.height);
+		}
+	}
+
+	public class ArrowKeyListener extends KeyAdapter {
+
+		public void keyReleased(KeyEvent e) {
+			if (e.getKeyCode() == KeyEvent.VK_LEFT)
+				left = false;
+			if (e.getKeyCode() == KeyEvent.VK_RIGHT)
+				right = false;
+			if (e.getKeyCode() == KeyEvent.VK_UP)
+				up = false;
+		}
+
+		public void keyPressed(KeyEvent e) {
+			if (e.getKeyCode() == KeyEvent.VK_LEFT)
+				left = true;
+			if (e.getKeyCode() == KeyEvent.VK_RIGHT)
+				right = true;
+			if (e.getKeyCode() == KeyEvent.VK_UP)
+				up = true;
+		}
+	}
+
+}

@@ -1,0 +1,22 @@
+package culminating;
+
+public class UFO extends Enemy {
+	
+	int upSpeed = 3, downSpeed = 6;
+	
+	
+	boolean moving;
+	
+	UFO(int x, int y, int w, int h, Player p) {
+		super(x, y, w, h, p);
+		
+		this.health = this.ogHealth = 2;
+		
+		
+	}
+	
+	void move() {
+		
+	}
+
+}
