@@ -1,0 +1,451 @@
+package culminating;
+
+import java.awt.*;
+import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.util.ArrayList;
+
+public class ScrollingPlatformer implements ActionListener {
+
+	//get everythign
+	JFrame frame;
+	DrawingPanel panel;
+
+	Timer timer;
+	int timeSpeed = 10;
+
+	Player player;
+	Boss enemy;
+	Enemy enemy1;
+	Level level1, level2, level3, level4, level5;
+
+	boolean up, left, right, space;
+	int frameCounter = 0;
+
+	int levelCounter = 0;
+	ArrayList<Level> levels = new ArrayList<Level>();
+
+	BufferedImage astronaut, swordLeft, swordRight, bgImage, jump, spike, boss;
+
+	//The Sprite sheet has 2 rows of sprites, each consisting of 14 frames.
+	//Each sprite is 16x16 pixels.
+	int astroSpriteW = 16;
+	int astroSpriteH = 16;
+	int astroSpriteRows = 2;
+	int astroSpriteCols = 14;
+	int currentAstroSprite = 0;
+
+	//The Sprite sheet has 2 rows of sprites, each consisting of 14 frames.
+	//Each sprite is 16x16 pixels.
+	int jumpSpriteW = 16;
+	int jumpSpriteH = 16;
+	int jumpSpriteRows = 1;
+	int jumpSpriteCols = 6;
+	int currentJumpSprite = 0;
+
+	//The Sprite sheet has 1 rows of sprites, each consisting of 12 frames.
+	//Each sprite is 64x64 pixels.
+	int swingSpriteW = 64;
+	int swingSpriteH = 64;
+	int swingSpriteRows = 1;
+	int swingSpriteCols = 12;
+	int currentSwingSprite = 0;
+
+	//The Sprite sheet has 1 rows of sprites, each consisting of 4 frames.
+	//Each sprite is 16x16 pixels.
+	int spikeSpriteW = 16;
+	int spikeSpriteH = 16;
+	int spikeSpriteRows = 1;
+	int spikeSpriteCols = 4;
+	int currentSpikeSprite = 0;
+
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				new ScrollingPlatformer();
+			}
+		});
+	}
+
+	ScrollingPlatformer() { //make evrything appear
+		frame = new JFrame();
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.addKeyListener(new ArrowKeyListener());
+		frame.setResizable(false);
+
+		panel = new DrawingPanel();
+		panel.setPreferredSize(new Dimension(1280, 720)); 
+		panel.setBackground(Color.black);
+
+		astronaut = loadImage("/Astronaut.png");
+		jump = loadImage("/Jump.png");
+		swordLeft = loadImage("/SwingLeft.png");
+		swordRight = loadImage("/SwingRight.png");
+		bgImage = loadImage("/spaceBackground.png");
+		spike = loadImage("/Spike.png");
+		boss = loadImage("/Boss.png");
+
+		level1 = new Level();
+
+		level1.addPlatform(-4, 700, 196, 20);
+		level1.addPlatform(400, 650, 300, 20);
+		level1.addPlatform(740, 550, 250, 20);
+		level1.addPlatform(1100, 550, 250, 20);
+		level1.addPlatform(1450, 550, 50, 20);
+		level1.addPlatform(1600, 550, 50, 20);
+		level1.addPlatform(1750, 550, 50, 20);
+		level1.addPlatform(1850, 450, 400, 20);
+		level1.addPlatform(2400, 300, 100, 20);
+		level1.addPlatform(2550, 200, 200, 20);
+		level1.addPlatform(3100, 700, 200, 20);
+
+		//staircase
+		level1.addPlatform(3400, 600, 50, 600);
+		level1.addPlatform(3500, 500, 50, 600);
+		level1.addPlatform(3600, 400, 50, 600);
+		level1.addPlatform(3700, 300, 50, 600);
+
+		// elevator
+		level1.addPlatform(4120, 650, 50, 50);
+		level1.addPlatform(4220, 550, 50, 50);
+		level1.addPlatform(4320, 450, 50, 50);
+		level1.addPlatform(4420, 350, 50, 50);
+		level1.addPlatform(4100, 200, 300, 50);
+		level1.addPlatform(4500, 200, 600, 50);
+
+		level1.setScrollStop();
+
+		level1.addHazard(460, 600, 30, 30);
+		level1.addHazard(600, 600, 30, 30);
+		level1.addHazard(1025, 500, 30, 30);
+
+		// falling out the map hazard
+		level1.addHazard(0, 750, 1280 + level1.scrollStop, 50);
+
+		level2 = new Level();
+
+		level2.addPlatform(-4, 704, 196, 20);
+		level2.addPlatform(388, 660, 189, 65);
+		level2.addPlatform(580, 520, 188, 34);
+		level2.addPlatform(399, 380, 161, 32);
+		level2.addPlatform(592, 230, 219, 34);
+		level2.addPlatform(938, 232, 106, 104);
+		level2.addPlatform(1143, -6, 137, 247);
+		level2.addPlatform(1033, 564, 122, 162);
+		level2.addPlatform(1307, 564, 122, 162);
+		level2.addPlatform(1600, 470, 300, 30);
+		level2.addPlatform(2100, 400, 200, 880);
+		level2.addPlatform(2100, 0, 200, 200);
+
+		level2.setScrollStop();
+
+		level2.addHazard(576, 680, 467, 50);
+		level2.addHazard(1144, 612, 163, 113);
+		level2.addHazard(0, 750, 1280 + level2.scrollStop, 50);
+
+		level3 = new Level();
+		level3.addPlatform(-4, 704, 500, 20);
+		level3.addHazard(0, 0, 50, 50);
+
+		level3.setScrollStop();
+
+		level4 = new Level();
+		level4.addPlatform(-4, 704, 196, 20);
+		level4.addHazard(0, 0, 50, 50);
+
+		level4.setScrollStop();
+
+		level5 = new Level();
+
+		// walking to the stage platform
+		//level5.addPlatform(0, 680, 750, 50);
+		level5.addPlatform(0, 680, 750, 50);
+		level5.addPlatform(650, 0, 150, 600);
+
+		// arena
+		level5.addPlatform(600, 680, 2000, 50); // base platform
+		level5.addPlatform(1000, 540, 300, 30);
+		level5.addPlatform(1600, 540, 300, 30);
+		level5.addPlatform(810, 400, 100, 30);
+		level5.addPlatform(1100, 400, 100, 30);
+		level5.addPlatform(1300, 400, 100, 30);
+		level5.addPlatform(1500, 400, 100, 30);
+		level5.addPlatform(1700, 400, 100, 30);
+		level5.addPlatform(2000, 400, 100, 30);
+
+		// ending platform
+		level5.addPlatform(2150, 680, 750, 50);
+		level5.addPlatform(2100, 0, 150, 600);
+
+		level5.setScrollStop();	
+
+		levels.add(level1);
+		levels.add(level2);
+		levels.add(level3);
+		levels.add(level4);
+		levels.add(level5);
+
+		player = new Player(50, 650, 50, 50, level1);
+		enemy1 = new Enemy(0, 500, 100, 100, player, level1);
+		enemy = new Boss(1000, 0, 900, 300, player, level5, this);
+
+		// this is enemy
+		level5.addBoss(enemy);
+		level5.addEnemy(enemy1);
+
+		timer = new Timer(timeSpeed, this);
+
+		frame.setContentPane(panel);
+		frame.pack();
+		frame.setVisible(true);
+
+		timer.start();
+
+	}
+
+	public void actionPerformed(ActionEvent e) {//every frame
+
+		player.move();
+		player.gravity();
+		player.jump();
+		player.attack();
+
+		enemy.move();
+		enemy.checkHit();
+
+		if (player.checkWin()) {
+			levelCounter++;
+			player.currentLevel = levels.get(levelCounter);
+			player.respawn();
+		}
+		if (player.checkDeath()) player.respawn();
+		if (enemy.checkDeath()) {
+			enemy.width = 0;
+			enemy.height = 0;
+		};
+		panel.repaint();
+	}
+
+	private class DrawingPanel extends JPanel {
+
+		public void paintComponent(Graphics g) { //paint
+			super.paintComponent(g);
+			Graphics2D g2 = (Graphics2D)g;
+			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+			g2.drawImage(bgImage, 0, 0, 1280, 720, null);
+
+			g2.setColor(Color.white);
+			for (Rectangle r: player.currentLevel.getPlatforms()) g2.fillRect(r.x, r.y, r.width, r.height); 
+
+			// Add a new variable to control the walking animation delay
+			int walkingAnimationDelay = 5;  // Adjust this value to control the animation speed
+
+			if (player.right) {
+				frameCounter++;
+
+				player.facingRight = true;
+
+				// Update the sprite index for walking animation only if the frameCounter exceeds the delay
+				if (frameCounter >= walkingAnimationDelay) {
+					currentAstroSprite++;
+					frameCounter = 0;
+				}
+
+				if (currentAstroSprite >= 1 * astroSpriteCols) {
+					currentAstroSprite = 0;
+				}
+			}
+
+			// Update the sprite index for walking animation
+			if (player.left) {
+				frameCounter++;
+				player.facingRight = false;
+
+				// Update the sprite index for walking animation only if the frameCounter exceeds the delay
+				if (frameCounter >= walkingAnimationDelay) {
+					currentAstroSprite++;
+					frameCounter = 0;
+				}
+
+				if (currentAstroSprite >= 2 * astroSpriteCols || currentAstroSprite < astroSpriteCols) {
+					currentAstroSprite = astroSpriteCols;
+				}
+			} 
+
+			// Update the sprite index for walking animation
+			if (player.up && !player.jumping) {
+				player.jumping = true;
+				currentJumpSprite = 0;
+			}
+
+			// Update the jump animation only if the player is currently jumping
+			if (player.jumping) {
+				frameCounter++;
+
+				// Update the sprite index for jumping animation only if the frameCounter exceeds the delay
+				int jumpingAnimationDelay = 5;  // Adjust this value to control the animation speed
+
+				if (frameCounter >= jumpingAnimationDelay) {
+					currentJumpSprite++;
+					frameCounter = 0;
+				}
+
+				// If the jump animation completes, stop jumping
+				if (currentJumpSprite >= 1 * jumpSpriteCols) {
+					currentJumpSprite = 0;
+					player.jumping = false;
+				}
+			}
+
+			// idle left or right
+			if (!player.left && !player.right) { 
+
+				if (!player.facingRight) currentAstroSprite = 14;
+				if (player.facingRight) currentAstroSprite = 0;
+
+			}
+
+			// Calculate the position and size of the current sprite
+			int AstrospriteX = (currentAstroSprite % astroSpriteCols) * astroSpriteW; 
+			int AstrospriteY = (currentAstroSprite / astroSpriteCols) * astroSpriteH;
+			// Calculate the position and size of the current sprite
+			int jumpSpriteX = (currentJumpSprite % jumpSpriteCols) * jumpSpriteW; 
+			int jumpSpriteY = (currentJumpSprite / jumpSpriteCols) * jumpSpriteH;
+
+			/*
+			 * player.x + player.width, player.y + player.height: bottom-right corner of player's coordinate and top-left corner to specify the size of destiantion rectangle (rectangle size)
+			 * spriteX, spriteY: The top-left coordinates of the first image of the sprite sheet. Coordinates determine which part of the sprite sheet will be drawn. (which frame)
+			 * spriteX + spriteW, spriteY + spriteH: The bottom-right coordinates of the source rectangle within the sprite sheet. With the top-left coordinates, this specifies the size of the source rectangle. (image size)
+			 */
+
+			if (!player.jumping) {
+				g2.drawImage(astronaut, player.x, player.y, player.x + player.width, player.y + player.height,
+						AstrospriteX, AstrospriteY, AstrospriteX + astroSpriteW, AstrospriteY + astroSpriteH, null);
+			}
+			if (player.jumping) {
+				g2.drawImage(jump, player.x, player.y, player.x + player.width, player.y + player.height,
+						jumpSpriteX, jumpSpriteY, jumpSpriteX + jumpSpriteW, jumpSpriteY + jumpSpriteH, null);
+			}
+
+
+			// Add a new variable to control the swinging animation delay
+			int swingingAnimationDelay = 0; 
+
+			if (player.attacking) {
+				frameCounter++;
+
+				if (frameCounter >= swingingAnimationDelay) {
+					currentSwingSprite++;
+					frameCounter = 0;
+				}
+
+				if (currentSwingSprite >= swingSpriteRows * swingSpriteCols) {
+					currentSwingSprite = 0;
+				}
+
+				int swordSpriteX = (currentSwingSprite % swingSpriteCols) * swingSpriteW;
+				int swordSpriteY = (currentSwingSprite / swingSpriteCols) * swingSpriteH;
+
+				if (player.facingRight) {
+					g2.drawImage(swordRight, player.swordHitbox.x, player.swordHitbox.y,
+							player.swordHitbox.x + player.swordHitbox.width,
+							player.swordHitbox.y + player.swordHitbox.height,
+							swordSpriteX, swordSpriteY, swordSpriteX + swingSpriteW, swordSpriteY + swingSpriteH, null);
+				} else if (!player.facingRight) {
+					g2.drawImage(swordLeft, player.swordHitbox.x, player.swordHitbox.y,
+							player.swordHitbox.x + player.swordHitbox.width,
+							player.swordHitbox.y + player.swordHitbox.height,
+							swordSpriteX, swordSpriteY, swordSpriteX + swingSpriteW, swordSpriteY + swingSpriteH, null);
+				}
+			} else {
+				currentSwingSprite = 0;
+			}
+
+			g2.setColor(Color.red);
+			for (Rectangle r: player.currentLevel.getHazards()) {
+
+				// Calculate the position and size of the current spike sprite
+				int spikeSpriteX = (currentSpikeSprite % spikeSpriteCols) * spikeSpriteW;
+				int spikeSpriteY = (currentSpikeSprite / spikeSpriteCols) * spikeSpriteH;
+
+				// Draw the current spike sprite for the current hazard
+				g2.drawImage(spike, r.x, r.y, r.x + r.width, r.y + r.height,
+						spikeSpriteX, spikeSpriteY, spikeSpriteX + spikeSpriteW, spikeSpriteY + spikeSpriteH, null);
+			}
+
+			g2.drawString(String.valueOf(player.y), 50, 50);
+			g2.drawString(String.valueOf(player.globalX), 80, 50);
+			g2.drawString(String.valueOf(player.cooldownTimer), 120, 50);
+
+			if (player.checkCollision()) g2.fillRect(100, 100, 100, 100);
+
+			// load enemies
+			for (Enemy e: player.currentLevel.getEnemies()) {
+				g2.fillOval(e.x, e.y, e.width, e.height);
+			}
+
+			if (levelCounter == 4) {
+				// loading the boss
+				for (Boss b: player.currentLevel.getBoss()) {
+					g2.drawImage(boss, b.x, b.y, b.width, b.height, null);
+				}
+				// load boss attack
+				for (Rectangle r: player.currentLevel.getAttacks()) {
+					g2.fillRect(r.x, r.y, r.width, r.height);
+				}
+				// load boss warning
+				g2.setColor(Color.yellow);
+				for (Rectangle r: player.currentLevel.getWarning()) {
+					g2.drawRect(r.x, r.y, r.width, r.height);
+				}
+			}
+		}
+
+
+	}
+
+	public class ArrowKeyListener extends KeyAdapter {
+
+		public void keyReleased(KeyEvent e) {
+			if (e.getKeyCode() == KeyEvent.VK_LEFT) player.left = false;
+			if (e.getKeyCode() == KeyEvent.VK_RIGHT) player.right = false;
+			if (e.getKeyCode() == KeyEvent.VK_UP) player.up = false;
+			if (e.getKeyCode() == KeyEvent.VK_SPACE) player.space = false;
+		}
+
+		public void keyPressed(KeyEvent e) {
+			if (e.getKeyCode() == KeyEvent.VK_LEFT) player.left = true;
+			if (e.getKeyCode() == KeyEvent.VK_RIGHT) player.right = true;
+			if (e.getKeyCode() == KeyEvent.VK_UP) player.up = true;
+			if (e.getKeyCode() == KeyEvent.VK_SPACE) player.space = true;
+		}
+	}
+
+	/**
+	 * Loads an image from a file in the resource folder
+	 * @param filename	The name of the file
+	 * @return	Returns a BufferedImage connected to filename
+	 */
+	BufferedImage loadImage(String filename) {
+		BufferedImage image = null;	
+		java.net.URL imageURL = this.getClass().getResource(filename);
+		if (imageURL != null) {
+			try {
+				image = ImageIO.read(imageURL);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} else { 
+			JOptionPane.showMessageDialog(null, "An image failed to load: " + filename , "ERROR", JOptionPane.ERROR_MESSAGE);
+		}
+		return image;
+	}
+
+
+}
