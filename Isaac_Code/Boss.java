@@ -76,7 +76,7 @@ public class Boss extends Enemy implements ActionListener {
 			if (player.globalX > -1650 && player.globalX < -400) {
 				System.out.println(time);
 				switch(time) {
-				case 1: 
+				case 1:
 					break;
 				case 2: break;
 				case 3: 
@@ -256,21 +256,21 @@ public class Boss extends Enemy implements ActionListener {
 		platformer.level5.addAttack(1150, 750, 50, 50);
 		
 		platformer.level5.addAttack(650, 0, 50, 50);
-		platformer.level5.addAttack(600, 50, 50, 50);
+		platformer.level5.addAttack(700, 50, 50, 50);
 		platformer.level5.addAttack(750, 100, 50, 50);
-		platformer.level5.addAttack(700, 150, 50, 50);
+		platformer.level5.addAttack(800, 150, 50, 50);
 		platformer.level5.addAttack(850, 200, 50, 50);
-		platformer.level5.addAttack(800, 250, 50, 50);
+		platformer.level5.addAttack(900, 250, 50, 50);
 		platformer.level5.addAttack(950, 300, 50, 50);
-		platformer.level5.addAttack(900, 350, 50, 50);
+		platformer.level5.addAttack(1000, 350, 50, 50);
 		platformer.level5.addAttack(1050, 400, 50, 50);
-		platformer.level5.addAttack(1000, 450, 50, 50);
+		platformer.level5.addAttack(1100, 450, 50, 50);
 		platformer.level5.addAttack(1150, 500, 50, 50);
-		platformer.level5.addAttack(1100, 550, 50, 50);
+		platformer.level5.addAttack(1200, 550, 50, 50);
 		platformer.level5.addAttack(1250, 600, 50, 50);
-		platformer.level5.addAttack(1200, 650, 50, 50);
+		platformer.level5.addAttack(1300, 650, 50, 50);
 		platformer.level5.addAttack(1350, 700, 50, 50);
-		platformer.level5.addAttack(1300, 750, 50, 50);
+		platformer.level5.addAttack(1400, 750, 50, 50);
 	}
 	void Attack5Warning() {
 		platformer.level5.addAttackWarning(0, 100, 50, 50);
@@ -387,18 +387,18 @@ public class Boss extends Enemy implements ActionListener {
 		platformer.level5.addAttack(180, 700, 50, 50);
 		platformer.level5.addAttack(130, 750, 50, 50);
 		
-		platformer.level5.addAttackWarning(580, 0, 50, 50);
-		platformer.level5.addAttackWarning(530, 50, 50, 50);
-		platformer.level5.addAttackWarning(480, 100, 50, 50);
-		platformer.level5.addAttackWarning(430, 150, 50, 50);
-		platformer.level5.addAttackWarning(380, 200, 50, 50);
-		platformer.level5.addAttackWarning(330, 250, 50, 50);
-		platformer.level5.addAttackWarning(280, 300, 50, 50);
-		platformer.level5.addAttackWarning(230, 350, 50, 50);
-		platformer.level5.addAttackWarning(180, 400, 50, 50);
-		platformer.level5.addAttackWarning(130, 450, 50, 50);
-		platformer.level5.addAttackWarning(80, 500, 50, 50);
-		platformer.level5.addAttackWarning(30, 550, 50, 50);
+		platformer.level5.addAttack(580, 0, 50, 50);
+		platformer.level5.addAttack(530, 50, 50, 50);
+		platformer.level5.addAttack(480, 100, 50, 50);
+		platformer.level5.addAttack(430, 150, 50, 50);
+		platformer.level5.addAttack(380, 200, 50, 50);
+		platformer.level5.addAttack(330, 250, 50, 50);
+		platformer.level5.addAttack(280, 300, 50, 50);
+		platformer.level5.addAttack(230, 350, 50, 50);
+		platformer.level5.addAttack(180, 400, 50, 50);
+		platformer.level5.addAttack(130, 450, 50, 50);
+		platformer.level5.addAttack(80, 500, 50, 50);
+		platformer.level5.addAttack(30, 550, 50, 50);
 	}
 	
 	void Attack6Warning() {
