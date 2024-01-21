@@ -18,9 +18,14 @@ public class Player extends Rectangle {
 	
 	boolean canJump = true;
 	boolean facingRight = true;
-	boolean jumping;
 	
 	boolean attacking = false;
+	
+	boolean jumping;
+	
+	boolean knockbackLeft, knockbackRight;
+	int knockbackTimer;
+	int knockbackSpeed = 3;
 	
 	int cooldownTimer = 0;
 	int attackTimer = 0;
@@ -28,8 +33,6 @@ public class Player extends Rectangle {
 	Rectangle swordHitbox;
 	
 	Level currentLevel;
-	
-	
 	
 	Player(int x, int y, int width, int height) {
 		super(x, y, width, height);
@@ -39,67 +42,28 @@ public class Player extends Rectangle {
 		
 		swordHitbox = new Rectangle(this.x, this.y, 70, 50);
 		
-	}
-	Player(int x, int y, int width, int height, Level c) {
-		super(x, y, width, height);
-		globalX = this.x;
-		vy = 0.0;
-		yy = (int)y;
-		
-		currentLevel = c;
-		
-		swordHitbox = new Rectangle(this.x, this.y, 70, 50);
 		
 	}
 	
 	void move() { //move the level if scrolling but move the player if not scrolling
-		if (left) {
-			facingRight = false;
-			globalX -= moveSpeed;
-			if (scrolling) {
-				for (Rectangle r: currentLevel.getPlatforms()) r.x += moveSpeed;
-				for (Boss b: currentLevel.getBoss()) b.x += moveSpeed;
-				for (Rectangle r: currentLevel.getHazards()) r.x += moveSpeed;
-				for (Rectangle r: currentLevel.getAttacks()) r.x += moveSpeed;
-				for (Enemy e: currentLevel.getEnemies()) e.x += moveSpeed;
-			}
-			else this.x -= moveSpeed;
-			
-			if (checkCollision()) {
-				globalX += moveSpeed;
-				if (scrolling) {
-					for (Rectangle r: currentLevel.getPlatforms()) r.x -= moveSpeed;
-					for (Boss b: currentLevel.getBoss()) b.x -= moveSpeed;
-					for (Rectangle r: currentLevel.getHazards()) r.x -= moveSpeed;
-					for (Rectangle r: currentLevel.getAttacks()) r.x -= moveSpeed;
-					for (Enemy e: currentLevel.getEnemies()) e.x -= moveSpeed;
-				}
-				else this.x += moveSpeed;
-			}
+		if (knockbackLeft) {
+			knockbackTimer++;
+			moveLeft(knockbackSpeed);
+			if (knockbackTimer > 5) knockbackLeft = false;
 		}
-		if (right) {
+		else if (knockbackRight) {
+			knockbackTimer++;
+			moveRight(knockbackSpeed);
+			if (knockbackTimer > 5) knockbackRight = false;
+		}
+		
+		else if (left) {
+			facingRight = false;
+			moveLeft(moveSpeed);
+		}
+		else if (right) {
 			facingRight = true;
-			globalX += moveSpeed;
-			if (scrolling && globalX + this.width < currentLevel.scrollStop) {
-				for (Rectangle r: currentLevel.getPlatforms()) r.x -= moveSpeed;
-				for (Boss b: currentLevel.getBoss()) b.x -= moveSpeed;
-				for (Rectangle r: currentLevel.getHazards()) r.x -= moveSpeed;
-				for (Rectangle r: currentLevel.getAttacks()) r.x -= moveSpeed;
-				for (Enemy e: currentLevel.getEnemies()) e.x -= moveSpeed;
-			}
-			else this.x += moveSpeed;
-
-			if (checkCollision()) {
-				globalX -= moveSpeed;
-				if (scrolling) {
-					for (Rectangle r: currentLevel.getPlatforms()) r.x += moveSpeed;
-					for (Rectangle r: currentLevel.getBoss()) r.x += moveSpeed;
-					for (Rectangle r: currentLevel.getHazards()) r.x += moveSpeed;
-					for (Rectangle r: currentLevel.getAttacks()) r.x += moveSpeed;
-					for (Enemy e: currentLevel.getEnemies()) e.x += moveSpeed;
-				}
-				else this.x -= moveSpeed;
-			}
+			moveRight(moveSpeed);
 		}
 		
 		swordHitbox.y = (int)this.yy;
@@ -111,6 +75,56 @@ public class Player extends Rectangle {
 		
 		if (globalX == -1000) scrolling = false;
 		
+	}
+	
+	private void moveLeft(int moveSpeed) {
+		
+		globalX -= moveSpeed;
+		if (scrolling) {
+			for (Rectangle r: currentLevel.getPlatforms()) r.x += moveSpeed;
+			for (Rectangle r: currentLevel.getHazards()) r.x += moveSpeed;
+			for (Enemy e: currentLevel.getEnemies()) e.x += moveSpeed;
+			for (Boss b: currentLevel.getBoss()) b.x += moveSpeed;
+			for (Rectangle r: currentLevel.getAttacks()) r.x += moveSpeed;
+		}
+		else this.x -= moveSpeed;
+		
+		if (checkCollision()) {
+			globalX += moveSpeed;
+			if (scrolling) {
+				for (Rectangle r: currentLevel.getPlatforms()) r.x -= moveSpeed;
+				for (Rectangle r: currentLevel.getHazards()) r.x -= moveSpeed;
+				for (Enemy e: currentLevel.getEnemies()) e.x -= moveSpeed;
+				for (Boss b: currentLevel.getBoss()) b.x -= moveSpeed;
+				for (Rectangle r: currentLevel.getAttacks()) r.x -= moveSpeed;
+			}
+			else this.x += moveSpeed;
+		}
+	}
+	
+	private void moveRight(int moveSpeed) {
+		
+		globalX += moveSpeed;
+		if (scrolling) {
+			for (Rectangle r: currentLevel.getPlatforms()) r.x -= moveSpeed;
+			for (Rectangle r: currentLevel.getHazards()) r.x -= moveSpeed;
+			for (Enemy e: currentLevel.getEnemies()) e.x -= moveSpeed;
+			for (Boss b: currentLevel.getBoss()) b.x -= moveSpeed;
+			for (Rectangle r: currentLevel.getAttacks()) r.x -= moveSpeed;
+		}
+		else this.x += moveSpeed;
+		
+		if (checkCollision()) {
+			globalX -= moveSpeed;
+			if (scrolling) {
+				for (Rectangle r: currentLevel.getPlatforms()) r.x += moveSpeed;
+				for (Rectangle r: currentLevel.getHazards()) r.x += moveSpeed;
+				for (Enemy e: currentLevel.getEnemies()) e.x += moveSpeed;
+				for (Boss b: currentLevel.getBoss()) b.x += moveSpeed;
+				for (Rectangle r: currentLevel.getAttacks()) r.x += moveSpeed;
+			}
+			else this.x -= moveSpeed;
+		}
 	}
 	
 	boolean checkCollision() { //check collision 
@@ -164,7 +178,7 @@ public class Player extends Rectangle {
 	
 	void attack() {
 		if (attacking) {
-			if (attackTimer < 10) attackTimer++;
+			if (attackTimer < 5) attackTimer++;
 			else {
 				attacking = false;
 				attackTimer = 0;
@@ -190,6 +204,7 @@ public class Player extends Rectangle {
 		for (Rectangle r: currentLevel.getAttacks()) {
 			if (this.intersects(r)) return true;
 		}
+		
 		return false;
 		
 		
@@ -199,10 +214,7 @@ public class Player extends Rectangle {
 		if (globalX > currentLevel.scrollStop) return true;
 		else return false;
 	}
-	
-	Level checkLevel() {
-		return currentLevel;
-	}
+
 	
 	void respawn() {
 		
@@ -218,9 +230,9 @@ public class Player extends Rectangle {
 			r.y = currentLevel.getOgHazards().get(index).y;
 			index++;
 		}
-		index = 0;
 		
-		currentLevel.respawnEnemies(); 
+		currentLevel.respawnEnemies();
+	
 		
 		this.x = 50;
 		this.globalX = 50;
