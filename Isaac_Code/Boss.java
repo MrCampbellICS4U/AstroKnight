@@ -123,7 +123,7 @@ public class Boss extends Enemy implements ActionListener {
 				case 17:
 					break;
 				case 18:
-					Attack6Warning();
+					Attack5Warning();
 					break;
 				case 19: 
 					Attack5();
@@ -132,8 +132,17 @@ public class Boss extends Enemy implements ActionListener {
 					break;
 				case 21:
 					removeAttack();
-					time = 3;
 					break;
+				case 22:
+					break;
+				case 23:
+					Attack6Warning();
+					break;
+				case 24:
+					Attack6();
+					break;
+				case 25:
+					removeAttack();
 				default: 
 					time = 0;
 					break;
