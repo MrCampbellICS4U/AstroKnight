@@ -77,7 +77,6 @@ public class Boss extends Enemy implements ActionListener {
 				System.out.println(time);
 				switch(time) {
 				case 1: 
-					time = 17;
 					break;
 				case 2: break;
 				case 3: 
