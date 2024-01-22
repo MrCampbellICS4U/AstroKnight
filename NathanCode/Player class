@@ -208,14 +208,12 @@ public class Player extends Rectangle {
 				attacking = false;
 				attackTimer = 0;
 				cooldownTimer = 0;
-				AstroKnight.stopMusic();
 			}
 		} else {
 			if (cooldownTimer < 20 && !space)
 				cooldownTimer++;
 			if (space && cooldownTimer >= 20) {
 				attacking = true;
-				AstroKnight.playMusic("\\Swing.wav");
 			}
 		}
 	}
