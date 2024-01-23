@@ -37,7 +37,7 @@ public class AstroKnight implements ActionListener {
 	Timer timer;
 	int timeSpeed = 10;
 	
-    BufferedImage astronaut, swordLeft, swordRight, bgImage, jump, spike; 
+    BufferedImage astronaut, swordLeft, swordRight, bgImage, jumpRight, jumpLeft, spike; 
 	BufferedImage boss, alien, turret, ufo, bullet, platformH, platformV;
 	BufferedImage introBackground, startButton, title;
 	BufferedImage background;
@@ -410,7 +410,8 @@ public class AstroKnight implements ActionListener {
 		
 		//load all images and sprites
 		astronaut = loadImage("/Astronaut.png");
-		jump = loadImage("/Jump.png");
+		jumpRight = loadImage("/JumpRight.png");
+		jumpLeft = loadImage("/JumpLeft.png");
 		swordLeft = loadImage("/SwingLeft.png");
 		swordRight = loadImage("/SwingRight.png");
 		bgImage = loadImage("/spaceBackground.png");
@@ -618,7 +619,7 @@ public class AstroKnight implements ActionListener {
 			int jumpSpriteY = (currentJumpSprite / jumpSpriteCols) * jumpSpriteH;
 
 			/*
-			 * player.x + player.width, player.y + player.height: bottom-right corner of player's coordinate and top-left corner to specify the size of destiantion rectangle (rectangle size)
+			 * player.x + player.width, player.y + player.height: bottom-right corner of player's coordinate and top-left corner to specify the size of destination rectangle (rectangle size)
 			 * spriteX, spriteY: The top-left coordinates of the first image of the sprite sheet. Coordinates determine which part of the sprite sheet will be drawn. (which frame)
 			 * spriteX + spriteW, spriteY + spriteH: The bottom-right coordinates of the source rectangle within the sprite sheet. With the top-left coordinates, this specifies the size of the source rectangle. (image size)
 			 */
@@ -628,8 +629,15 @@ public class AstroKnight implements ActionListener {
 						AstrospriteX, AstrospriteY, AstrospriteX + astroSpriteW, AstrospriteY + astroSpriteH, null);
 			}
 			if (player.jumping) {
-				g2.drawImage(jump, player.x, player.y, player.x + player.width, player.y + player.height,
-						jumpSpriteX, jumpSpriteY, jumpSpriteX + jumpSpriteW, jumpSpriteY + jumpSpriteH, null);
+				if (player.facingRight) {
+					g2.drawImage(jumpRight, player.x, player.y, player.x + player.width, player.y + player.height,
+							jumpSpriteX, jumpSpriteY, jumpSpriteX + jumpSpriteW, jumpSpriteY + jumpSpriteH, null);
+				}
+				else {
+					g2.drawImage(jumpLeft, player.x, player.y, player.x + player.width, player.y + player.height,
+							jumpSpriteX, jumpSpriteY, jumpSpriteX + jumpSpriteW, jumpSpriteY + jumpSpriteH, null);
+				}
+				
 			}
 
 
@@ -825,7 +833,7 @@ public class AstroKnight implements ActionListener {
 			loopMusic();
 			
 			Thread t = new Thread(() -> { //using another thread so that the Scanner does not interfere with the Graphics
-				System.out.print("I heard you were pretty good at Astro Knight! Want to play a cancer level? (y/n) > ");
+				System.out.print("Yo, I heard you were pretty good at Astro Knight! Want to play a cancer level? (y/n) > ");
 				bonusAnswer = input.next();
 				
 				if (bonusAnswer.equals("y")) {
